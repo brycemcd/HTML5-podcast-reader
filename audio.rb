@@ -12,7 +12,6 @@ class CurrentPlay
     include MongoMapper::Document
 
     key :stream
-    key :playhead
 end
 
 class Feed
@@ -22,7 +21,13 @@ class Feed
     key :title
     key :last_updated, DateTime
     timestamps!
-
+    
+    def self.import_feed( url )
+        feed = FeedNormalizer::FeedNormalizer.parse open( url )
+        nf = self.new( :title => feed.title )
+        feed.entries[0..3].each { |e| nf.entries << Entry.new_from_feed( e ) }
+        nf.save!
+    end
 end
 
 class Entry
@@ -34,6 +39,7 @@ class Entry
     key :urls,  Array
     key :date_published, DateTime
     key :stream
+    key :playhead, String, :default => 0
 
     def self.new_from_feed( feed )
         self.new(
@@ -42,28 +48,40 @@ class Entry
             :content => feed.content, 
             :urls => feed.urls, 
             :date_published => feed.date_published , 
-            :stream => feed.enclosures.first.url
+            :stream => feed.enclosures.first.url 
         )
     end
 end
 
+
+helpers do
+    def get_stream( stream )
+       obj_id = BSON::ObjectId( stream )
+       feed = Feed.first( "entries._id" => obj_id )
+       feed.entries.select { |f| f._id == obj_id}.first
+    end
+end
+
 get "/" do
-    @stream = CurrentPlay.last || CurrentPlay.new
+    last_played = CurrentPlay.first || CurrentPlay.new
+    @stream = get_stream( last_played.stream ) || Entry.new
     @feeds = Feed.all
     erb :index
 end
+
 get "/get-stream" do
-    puts params[:stream]
-    feed = Feed.first( {"entries.stream" => params[:stream] })
-    @stream = feed.entries.select { |f| f.stream == params[:stream] }
+    @stream = get_stream( params[:stream] )
     if @stream
-        @stream.to_json
+       @stream.to_json
     else
         Entry.new
     end
 end
+
 get "/played" do
-    @stream = CurrentPlay.first_or_create(:stream => params[:stream] )
-    @stream.set(:playhead => params[:time] )
+    cp = CurrentPlay.first || CurrentPlay.new
+    cp.update_attributes( :stream => params[:stream] )
+    @stream = get_stream( params[:stream] )
     puts @stream.inspect
+    @stream.update_attributes(:playhead => params[:time] )
 end

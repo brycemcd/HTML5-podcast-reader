@@ -1,78 +1,73 @@
 <html>
   <head>
+      <!-- CSS -->
+      <style type="text/css" media="screen">
+          .play_button{ color: green; }
+          #feeds{ 
+              float:left; 
+              width: 300px;
+              padding-right:20px
+          }
+          #player{ float: left; width: 500px }
+      </style>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
   </head>
 <body>
     <h1> RSS Feeder </h1>
-    <% @feeds.each do |feed| %>
-        <div class="feed">
-            <h2> <%= feed.title %> </h2>
-            <% feed.entries.each do |show| %>
-                <div>
-                    <h3> <%= show.title %> <em> <a data-stream="<%= show.stream %>" data-id="<%= show.id %>" class="play_show">play</a> </em> </h3>
-                    <em> <%= show.date_published %> </em>
-                </div>
-            <% end %>
-        </div>
-    <% end %>
-  <hr />
-  <h4 id="playing"></h4>
-  <p>
-      <em id="published"></em>
-  </p>
-  <audio id="playhead" data-title="ruby5-podcast" data-epid="175" controls="controls" src="<%= @stream.stream %>" onloadeddata="this.currentTime = <%= @stream.playhead %>; console.log('whoa'); " ></audio>
-   <div id="content">
+    <div id="feeds" class="Feeds">
+        <% @feeds.each do |feed| %>
+            <div class="feed">
+                <h2> <%= feed.title %> </h2>
+                <% feed.entries.each do |show| %>
+                    <ul>
+                        <li> 
+                            <strong><%= show.title %></strong>  <br />
+                            published: <%= show.date_published %> 
+                            <em class="play_button"> <a data-stream="<%= show.stream %>" data-id="<%= show.id %>" class="play_show">play</a> </em>
+                        </li>
+                    </ul>
+                <% end %>
+            </div>
+        <% end %>
     </div>
-  <hr />
+    <div id="player">
+  <h4 id="playing"> <%= @stream.title %> </h4>
+  <p>
+      <em id="published"> <%= @stream.date_published %></em>
+  </p>
+  <audio id="playhead" data-epid="<%= @stream.id %>" controls="controls" src="<%= @stream.stream %>" onloadeddata="this.currentTime = <%= @stream.playhead %>; " >
+    Balls, this browser is not HTML5'y enough
+  </audio>
+   <div id="content"> <%= @stream.content %> </div>
+  </div>
   
-
-  <ul>
-    <li data-stream="http://feedproxy.google.com/~r/Ruby5/~5/NAj_A7deSic/175-ruby5.mp3"> <a data-playhead="100" data-stream="http://feedproxy.google.com/~r/Ruby5/~5/v7SVh2w6USU/175-ruby5.mp3">ep 175</a> </li>
-    <li data-stream="http://feedproxy.google.com/~r/Ruby5/~5/NAj_A7deSic/172-ruby5.mp3"> <a data-playhead="200" data-stream="http://feedproxy.google.com/~r/Ruby5/~5/v7SVh2w6USU/172-ruby5.mp3">ep 172</a> </li>
-    <li data-stream="http://feedproxy.google.com/~r/Ruby5/~5/v7SVh2w6USU/171-ruby5.mp3"> <a data-playhead="300" data-stream="http://feedproxy.google.com/~r/Ruby5/~5/v7SVh2w6USU/171-ruby5.mp3">ep 171</a> </li>
-  </ul>
 <script>
     $(function(){
         $(".play_show").click(function(){
             $.getJSON("/get-stream", 
                 {
-                    stream : $(this).attr("data-stream")
+                    stream : $(this).attr("data-id")
                 },
-                function(data) {
-                    var show = data[0];
+                function(show) {
                     $("#playhead").attr( "src", show.stream);
                     $("#playing").html( show.title );
                     $("#published").html( show.date_published )
                     $("#content").html( show.content )
-                    console.log(data[0] );
+                    $("#playhead").attr("data-epid", show.id )
+                    $("#playhead").attr("onloadeddata", "this.currentTime = " + show.playhead )
                 });
         })
-     //$("#playhead").attr("onloadeddata", 100);
-     //var ele = document.getElementById("playhead");
-     //ele.setAttribute("src", "<%= @stream.stream %>");
-     //ele.onloadeddata = function(e){
-       //console.log("loaded!");
-       //ele.currentTime = <%= @stream.playhead %> 
-     //}
-})
-$("li > a").click(function(){ 
-    var sel = $(this).attr("data-stream");
-    $("#playhead").attr("onloadeddata", "this.currentTime = " + $(this).attr("data-playhead") );
-    $("#playhead").attr("src" , sel );
-    console.log( $(this).attr('data-playhead') )
-    return false;
-});
+    });
 
 function thetime(){
- var ele = document.getElementById("playhead");
- var ct = ele.currentTime;
- $.ajax({
-   url: "/played",
-   data: {time : ct, stream : $("#playhead").attr("src") }
- });
- console.log( ele.currentTime )
+    var ele = document.getElementById("playhead");
+    var ct = ele.currentTime;
+    $.ajax({
+        url: "/played",
+        data: {time : ct, stream : $("#playhead").attr("data-epid") }
+    });
 };
-//setInterval("thetime()", 5000);
+setInterval("thetime()", 5000);
 </script>
 </body>
 </html>
