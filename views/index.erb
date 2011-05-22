@@ -1,73 +1,75 @@
 <html>
-  <head>
-      <!-- CSS -->
-      <style type="text/css" media="screen">
-          .play_button{ color: green; }
-          #feeds{ 
-              float:left; 
-              width: 300px;
-              padding-right:20px
-          }
-          #player{ float: left; width: 500px }
-      </style>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
-  </head>
-<body>
-    <h1> RSS Feeder </h1>
-    <div id="feeds" class="Feeds">
-        <% @feeds.each do |feed| %>
-            <div class="feed">
-                <h2> <%= feed.title %> </h2>
-                <% feed.entries.each do |show| %>
-                    <ul>
-                        <li> 
-                            <strong><%= show.title %></strong>  <br />
-                            published: <%= show.date_published %> 
-                            <em class="play_button"> <a data-stream="<%= show.stream %>" data-id="<%= show.id %>" class="play_show">play</a> </em>
-                        </li>
-                    </ul>
-                <% end %>
-            </div>
-        <% end %>
-    </div>
-    <div id="player">
-  <h4 id="playing"> <%= @stream.title %> </h4>
-  <p>
-      <em id="published"> <%= @stream.date_published %></em>
-  </p>
-  <audio id="playhead" data-epid="<%= @stream.id %>" controls="controls" src="<%= @stream.stream %>" onloadeddata="this.currentTime = <%= @stream.playhead %>; " >
-    Balls, this browser is not HTML5'y enough
-  </audio>
-   <div id="content"> <%= @stream.content %> </div>
-  </div>
-  
-<script>
-    $(function(){
-        $(".play_show").click(function(){
-            $.getJSON("/get-stream", 
-                {
-                    stream : $(this).attr("data-id")
-                },
-                function(show) {
-                    $("#playhead").attr( "src", show.stream);
-                    $("#playing").html( show.title );
-                    $("#published").html( show.date_published )
-                    $("#content").html( show.content )
-                    $("#playhead").attr("data-epid", show.id )
-                    $("#playhead").attr("onloadeddata", "this.currentTime = " + show.playhead )
-                });
-        })
-    });
+    <head>
+        <!-- CSS -->
+        <style type="text/css" media="screen">
+            .play_button{ color: green; }
+            #feeds{ 
+                float:left; 
+                width: 300px;
+                padding-right:20px
+            }
+            #player{ float: left; width: 500px }
+        </style>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
+    </head>
+    <body>
 
-function thetime(){
-    var ele = document.getElementById("playhead");
-    var ct = ele.currentTime;
-    $.ajax({
-        url: "/played",
-        data: {time : ct, stream : $("#playhead").attr("data-epid") }
-    });
-};
-setInterval("thetime()", 5000);
-</script>
-</body>
+        <h1> RSS Feeder </h1>
+        <div id="feeds" class="Feeds">
+            <% @feeds.each do |feed| %>
+                <div class="feed">
+                    <h2> <%= feed.title %> </h2>
+                    <% feed.entries.each do |show| %>
+                        <ul>
+                            <li> 
+                                <strong><%= show.title %></strong>  <br />
+                                published: <%= show.date_published %> 
+                                <em class="play_button"> <a data-stream="<%= show.stream %>" data-id="<%= show.id %>" class="play_show">play</a> </em>
+                            </li>
+                        </ul>
+                    <% end %>
+                </div>
+            <% end %>
+        </div>
+
+        <div id="player">
+            <h4 id="playing"> <%= @stream.title %> </h4>
+            <p>
+                <em id="published"> <%= @stream.date_published %></em>
+            </p>
+            <audio id="playhead" data-epid="<%= @stream.id %>" controls="controls" src="<%= @stream.stream %>" onloadeddata="this.currentTime = <%= @stream.playhead %>; " >
+            Balls, this browser is not HTML5'y enough
+            </audio>
+            <div id="content"> <%= @stream.content %> </div>
+        </div>
+
+        <script>
+            $(function(){
+                $(".play_show").click(function(){
+                    $.getJSON("/get-stream", 
+                    {
+                        stream : $(this).attr("data-id")
+                    },
+                    function(show) {
+                        $("#playhead").attr( "src", show.stream);
+                        $("#playing").html( show.title );
+                        $("#published").html( show.date_published )
+                        $("#content").html( show.content )
+                        $("#playhead").attr("data-epid", show.id )
+                        $("#playhead").attr("onloadeddata", "this.currentTime = " + show.playhead )
+                    });
+                })
+            });
+
+            function thetime(){
+                var ele = document.getElementById("playhead");
+                var ct = ele.currentTime;
+                $.ajax({
+                    url: "/played",
+                    data: {time : ct, stream : $("#playhead").attr("data-epid") }
+                });
+            };
+            setInterval("thetime()", 5000);
+        </script>
+    </body>
 </html>
