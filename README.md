@@ -9,12 +9,12 @@ Works in Chrome for sure, maybe others.
 
 ## Current Features:
 
-+Import feeds (via command line)
-+View last three feeds
-+Store current playhead from file and start playing from that mark even if started again from another computer
++ Import feeds (via command line)
++ View last three feeds
++ Store current playhead from file and start playing from that mark even if started again from another computer
++ Refresh feeds via websocket (requires Thin)
 
 ##TODO
 
 + Build UI for feed import
-+ Refresh feeds
 + Autodetect Audio/Video

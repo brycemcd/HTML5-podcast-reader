@@ -19,13 +19,29 @@ class Feed
     many :entries
 
     key :title
+    key :feed_url
     key :last_updated, DateTime
     timestamps!
+
+    def refresh_feed
+        feed = FeedNormalizer::FeedNormalizer.parse open( self.feed_url )
+        feed.entries.each do |e|
+            episode = Entry.new_from_feed( e )
+            self.entries << episode unless self.entries.map(&:stream).include?( episode.stream )
+        end
+        if self.save
+            "#{self.title} now has #{self.entries.count} episodes"
+        else
+            "no new episodes for #{self.title}"
+        end
+    end
     
     def self.import_feed( url )
         feed = FeedNormalizer::FeedNormalizer.parse open( url )
-        nf = self.new( :title => feed.title )
-        feed.entries[0..3].each { |e| nf.entries << Entry.new_from_feed( e ) }
+        nf = self.new( :title => feed.title, :feed_url => url )
+        feed.entries[0..3].each do |e| 
+            nf.entries << Entry.new_from_feed( e )
+        end
         nf.save!
     end
 end
@@ -38,7 +54,7 @@ class Entry
     key :content
     key :urls,  Array
     key :date_published, DateTime
-    key :stream
+    key :stream, :unique => true
     key :playhead, String, :default => 0
 
     def self.new_from_feed( feed )
