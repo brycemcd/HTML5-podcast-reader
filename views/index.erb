@@ -83,7 +83,7 @@
                 return false;
             })
             function websocket_init(){
-                ws = new WebSocket("ws://localhost:8080/");
+                ws = new WebSocket("ws://192.168.1.2:9000/");
                 ws.onopen = function(){
                     $("#refresh_feedback").html("");
                      console.log( "Server connected" );

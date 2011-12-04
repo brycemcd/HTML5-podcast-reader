@@ -30,7 +30,10 @@ class Feed
             self.entries << episode unless self.entries.map(&:stream).include?( episode.stream )
         end
         if self.save
-            "#{self.title} now has #{self.entries.count} episodes"
+            ent = []
+            entries.each { |e| ent << {:title => e.title, :date_published => e.date_published } }
+                { "#{self.title}" => ent }.to_json
+            #"#{self.title} now has #{self.entries.count} episodes"
         else
             "no new episodes for #{self.title}"
         end
