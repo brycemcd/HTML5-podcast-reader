@@ -81,11 +81,20 @@ helpers do
     end
 end
 
-get "/" do
+get "/old" do
     last_played = CurrentPlay.first || CurrentPlay.new
     @stream = get_stream( last_played.stream ) || Entry.new
     @feeds = Feed.all
     erb :index
+end
+
+get "/" do
+    erb :backbone
+end
+
+get "/feeds" do
+    content_type :json
+    Feed.all.to_json
 end
 
 get "/get-stream" do

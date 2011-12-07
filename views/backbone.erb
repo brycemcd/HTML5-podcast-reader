@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <!-- CSS -->
+        <style type="text/css" media="screen">
+            .play_button{ color: green; }
+            #feeds{ 
+                float:left; 
+                width: 300px;
+                padding-right:20px
+            }
+            #player{ float: left; width: 500px }
+            #refresh_feedback{ color: green; }
+        </style>
+
+        <!--JS -->
+        <script src="/js/modernizr-1.6.min.js" type="text/javascript"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
+        <script src="/js/underscore-min.js" type="text/javascript"></script>
+        <script src="/js/backbone-min.js" type="text/javascript"></script>
+        <script src="/js/reader.js" type="text/javascript"></script>
+
+        <script type="text/template" id="feeds-template">
+            <ul class="episodes"> </ul>
+        </script>
+    </head>
+    <body>
+
+        <h1> RSS Feeder </h1>
+        <div id="refresh_feeds" class="">
+            <input type="button" name="refresh" value="refresh feeds" id="refresh"/>
+            <p id="refresh_feedback">  </p>
+        </div>
+        <div id="feeds" class="Feeds">
+        </div>
+
+        <div id="player">
+            <h4 id="playing">  </h4>
+            <p>
+                <em id="published"></em>
+            </p>
+            <audio id="playhead" controls="controls" src="" >
+            Balls, this browser is not HTML5'y enough
+            </audio>
+            <div id="content"></div>
+        </div>
+
+        <script>
+            $(function(){
+            //    window.library = window.feedlibrary.fetch();
+        feeds = new Feeds();
+        feeds.fetch();
+        window.App = new FeedView({ collection : feeds });
+        $("#feeds").append( window.App.render().el );
+            });
+        </script>
+    </body>
+</html>
