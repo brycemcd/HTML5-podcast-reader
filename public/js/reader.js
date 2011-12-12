@@ -5,6 +5,10 @@
     
     });
 
+    window.Episode = Backbone.Model.extend({
+    
+    });
+
     // Collections
     window.Feeds = Backbone.Collection.extend({
         model: Feed,
@@ -15,30 +19,34 @@
 
 $(document).ready( function() {
     // Views
-    window.FeedView = Backbone.View.extend({
-        tagName: 'section',
+    window.AllFeedsView = Backbone.View.extend({
+        tagName: 'div',
         className: 'feeds',
+        template : _.template( $('#feeds-template').html() ),
+        
 
         initialize : function() {
             _.bindAll(this, 'render');
-            _.templateSettings = {
-                evalutate : /\/|(.+?)\|/g ,
-                interpolate: /\|\|(.+?)\|\|/g
-            },
-            this.template = _.template( $('#feeds-template').html() );
             this.collection.bind( 'reset' , this.render );
         },
 
         render : function() {
-           var $episodes,
-                collection = this.collection;
-
-            $(this.el).html( this.template({}) );
-            $episodes = this.$('.episodes');
+            var $all_feeds = $(this.el);
+            collection = this.collection;
+            $(this.el).append( this.template );
+            //var allfeeds = this.template( f = collection.toJSON() );
+            //$(this.el).html(  allfeeds  );
+            //$episodes = this.$('.episodes');
 
             collection.each( function(feed) {
-               feed = feed.toJSON();
-               $episodes.append( "<h3>" + feed.title + "</h3>" );   
+                var feedview = new FeedView({
+                    model : feed,
+                    collection : this.collection
+                });
+                // 
+               //feed = feed.toJSON();
+               //$all_feeds.append( "<h3>" + feed.title + "</h3>" );   
+               $all_feeds.append( feedview.render().el );
             });
             
            return this;
@@ -46,9 +54,55 @@ $(document).ready( function() {
 
     });
 
-    //window.FeedView = Backbone.View.extend({
+    window.FeedView = Backbone.View.extend({
+        tagName: 'section',
+        className: 'feed',
+        template : _.template( $('#feed-template').html() ),
+
+        initialize : function() {
+            _.bindAll(this, 'render');
+            this.collection.bind( 'reset' , this.render );
+        },
+
+        render : function() {
+            feed = this.template( this.model.toJSON() );
+            $(this.el).html( feed );
+            $episodes = $('.episodes');
+
+            console.log( this.model.toJSON().entries );
+            //this.model.toJSON().entries.each( function( episode ){
+                //var epiview= new EpisodesView({
+                    //model : episode,
+                    //collection : this.collection
+                //});
+                // 
+               //feed = feed.toJSON();
+               //$all_feeds.append( "<h3>" + feed.title + "</h3>" );   
+               //console.log( episode.toJSON() );
+               $episodes.append( epiview.render().el );
+            //});
+           return this;
+        }
     
-    //});
+    });
+
+    window.EpisodesView = Backbone.View.extend({
+        tagName: 'li',
+        className: 'episodes',
+        template : _.template( $('#episodes-template').html() ),
+
+        initialize : function() {
+            _.bindAll(this, 'render');
+            this.collection.bind( 'reset' , this.render );
+        },
+
+        render : function() {
+            episode = this.template( this.model.toJSON() );
+            $(this.el).html(  episode );
+
+            return this;
+        }
+    });
     // Router
     
     window.FeedReader = Backbone.Router.extend({

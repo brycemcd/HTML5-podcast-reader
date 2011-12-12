@@ -19,9 +19,29 @@
         <script src="/js/underscore-min.js" type="text/javascript"></script>
         <script src="/js/backbone-min.js" type="text/javascript"></script>
         <script src="/js/reader.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            _.templateSettings = {
+                interpolate: /\<\@\=(.+?)\@\>/gim,
+                evaluate: /\<\@(.+?)\@\>/gim
+            }
+        </script>
 
+        <script type="text/template" id="feeds-template-bkp">
+            <@ _.each(f , function( feed ){ @>
+                <h3> <@= feed.title @> </h3>
+                <ul class="episodes">
+                </ul>
+            <@ });  @>
+        </script>
         <script type="text/template" id="feeds-template">
-            <ul class="episodes"> </ul>
+        </script>
+        <script type="text/template" id="feed-template">
+                <h3> <@= title @> </h3>
+                <ul class="episodes">
+                </ul>
+        </script>
+        <script type="text/template" id="episodes-template">
+            <@= title @>
         </script>
     </head>
     <body>
@@ -31,7 +51,7 @@
             <input type="button" name="refresh" value="refresh feeds" id="refresh"/>
             <p id="refresh_feedback">  </p>
         </div>
-        <div id="feeds" class="Feeds">
+        <div id="all_feeds">
         </div>
 
         <div id="player">
@@ -50,8 +70,8 @@
             //    window.library = window.feedlibrary.fetch();
         feeds = new Feeds();
         feeds.fetch();
-        window.App = new FeedView({ collection : feeds });
-        $("#feeds").append( window.App.render().el );
+        window.App = new AllFeedsView({ collection : feeds });
+        $("#all_feeds").append( window.App.render().el );
             });
         </script>
     </body>
